@@ -274,7 +274,7 @@ aws ecr get-login-password \
   --password-stdin ${ECR_URI}
 
 # Build da imagem (Dockerfile está na raiz)
-docker build -t fiap-todo-api:v1.0.0 .
+docker build --platform linux/amd64 -t fiap-todo-api:v1.0.0 .
 
 # Tag da imagem para o ECR
 docker tag fiap-todo-api:v1.0.0 ${ECR_URI}/fiap-todo-api:v1.0.0
