@@ -531,28 +531,4 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 ---
 
-## 📊 Parte 7: Resumo
-
-### O Que Aprendemos
-
-✅ **Pipeline Unificado**: 1 arquivo com 4 jobs sequenciais
-✅ **Jobs com Dependências**: Uso de `needs:` para ordem de execução
-✅ **Compartilhamento de Dados**: Outputs entre jobs
-✅ **GitOps Automático**: Commit automático de manifests
-✅ **Validação**: Kustomize build antes do deploy
-✅ **Observabilidade**: Summaries em cada job
-
-### Vantagens
-
-- 🎯 **Fluxo claro**: Fácil de entender e debugar
-- 🔄 **Totalmente automático**: Push → Deploy
-- ✅ **Validação integrada**: Catch errors antes do deploy
-- 📊 **Visibilidade**: Logs organizados por job
-- 🛠️ **Manutenível**: 1 arquivo para gerenciar
-
-### Próximos Passos
-
-- **Vídeo 4.3**: FluxCD como alternativa ao ArgoCD
-- **Comparação**: ArgoCD vs FluxCD
-- **Escolha**: Quando usar cada ferramenta
-
+**FIM DO VÍDEO 4.2** ✅
