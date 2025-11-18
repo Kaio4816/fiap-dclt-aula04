@@ -119,18 +119,49 @@ ls -la .github/workflows/
 
 ## 📦 Parte 4: Criar Pipeline GitOps Unificado
 
-### Passo 4: Criar gitops-pipeline.yml
+### Passo 4: Entender a Estrutura do Pipeline
 
-**⚠️ Nota Importante:**
-- Vamos criar **1 único arquivo** com **4 jobs** sequenciais
-- Cada job representa uma etapa do pipeline GitOps
-- Jobs executam em sequência usando `needs:`
+**⚠️ Nova Abordagem:**
+- **1 único arquivo** em vez de 3 separados
+- **4 jobs sequenciais** que executam em ordem
+- **Compartilhamento de dados** entre jobs usando `outputs`
 
-**Estrutura do Pipeline:**
+**Fluxo do Pipeline:**
 ```
-Job 1: Build & Push    → Job 2: Update GitOps → Job 3: ArgoCD Sync → Job 4: Summary
-  🐳 Docker              📝 Kustomize             🔄 Sync              📊 Report
+┌──────────────────────────────────────────────────────────┐
+│ Push em app/ → Trigger Pipeline                          │
+└──────────────────────────────────────────────────────────┘
+                        ↓
+┌──────────────────────────────────────────────────────────┐
+│ JOB 1: build-and-push                                    │
+│ 🐳 Build Docker image e push para ECR                    │
+│ Output: image-tag, ecr-registry                          │
+└──────────────────────────────────────────────────────────┘
+                        ↓ needs: build-and-push
+┌──────────────────────────────────────────────────────────┐
+│ JOB 2: update-gitops                                     │
+│ 📝 Atualiza kustomization.yaml com nova tag              │
+│ Faz commit e push das mudanças                           │
+└──────────────────────────────────────────────────────────┘
+                        ↓ needs: update-gitops
+┌──────────────────────────────────────────────────────────┐
+│ JOB 3: validate-manifests                                │
+│ ✅ Valida manifests com kustomize build                  │
+└──────────────────────────────────────────────────────────┘
+                        ↓ needs: all
+┌──────────────────────────────────────────────────────────┐
+│ JOB 4: pipeline-summary                                  │
+│ 📊 Mostra resumo completo do pipeline                    │
+└──────────────────────────────────────────────────────────┘
 ```
+
+### Passo 5: Criar gitops-pipeline.yml
+
+**📋 Arquivo Completo:**
+
+O arquivo completo está disponível em `.github/workflows/gitops-pipeline.yml` no repositório.
+
+**Vamos criar passo a passo:**
 
 **Linux / macOS:**
 ```bash
@@ -140,9 +171,16 @@ cd fiap-dclt-aula04
 # Criar estrutura de diretórios
 mkdir -p .github/workflows
 
-# Criar arquivo gitops-pipeline.yml
-cat > .github/workflows/docker-build.yml << 'EOF'
-name: 🐳 Build and Push Docker Image
+# Copiar arquivo do repositório
+cp .github/workflows/gitops-pipeline.yml .github/workflows/gitops-pipeline.yml
+
+# OU criar manualmente (veja estrutura abaixo)
+```
+
+**Estrutura do Arquivo (gitops-pipeline.yml):**
+
+```yaml
+name: 🚀 GitOps Pipeline - Build, Update & Sync
 
 on:
   push:
@@ -150,6 +188,9 @@ on:
     paths: 
       - 'app/**'
   workflow_dispatch:
+
+permissions:
+  contents: write  # Permite commit no Job 2
 
 env:
   AWS_REGION: us-east-1

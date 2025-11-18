@@ -2,23 +2,6 @@
 
 Este repositório contém as definições declarativas para deploy das aplicações FIAP usando GitOps.
 
-## 📁 Estrutura
-
-```
-gitops-repo/
-├── applications/          # Definições de aplicações
-│   └── fiap-todo-api/    # Todo API
-│       ├── base/         # Manifests base
-│       └── overlays/     # Configurações por ambiente
-├── infrastructure/       # Ferramentas de infraestrutura
-│   ├── argocd/          # Configurações ArgoCD
-│   └── fluxcd/          # Configurações FluxCD
-└── clusters/            # Configurações por cluster
-    ├── development/
-    ├── staging/
-    └── production/
-```
-
 ## 🚀 Como usar
 
 ### ArgoCD
