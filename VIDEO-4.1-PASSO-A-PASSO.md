@@ -263,9 +263,110 @@ cat gitops-repo/applications/fiap-todo-api/base/kustomization.yaml
 
 ---
 
-## 🚀 Parte 4: Deploy com ArgoCD
+## 🐳 Parte 4: Build e Push da Imagem Docker
 
-### Passo 9: Criar Application no ArgoCD
+### Passo 9: Criar Repositório ECR
+
+```bash
+# Obter Account ID
+ACCOUNT_ID=$(aws sts get-caller-identity --profile fiapaws --query Account --output text)
+
+# Criar repositório ECR
+aws ecr create-repository \
+  --repository-name fiap-todo-api \
+  --region us-east-1 \
+  --profile fiapaws
+
+# Salvar URI do ECR
+ECR_URI="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+echo "ECR URI: $ECR_URI"
+```
+
+### Passo 10: Build e Push da Imagem (Manual)
+
+**⚠️ Nota Pedagógica:**
+- Neste vídeo, faremos o build **manualmente** para entender o processo
+- No **Vídeo 4.2**, automatizaremos isso com GitHub Actions
+
+```bash
+# Login no ECR
+aws ecr get-login-password \
+  --region us-east-1 \
+  --profile fiapaws | docker login \
+  --username AWS \
+  --password-stdin ${ECR_URI}
+
+# Navegar para o diretório da aplicação
+cd app/
+
+# Build da imagem
+docker build -t fiap-todo-api:v1.0.0 .
+
+# Tag da imagem para o ECR
+docker tag fiap-todo-api:v1.0.0 ${ECR_URI}/fiap-todo-api:v1.0.0
+
+# Push para o ECR
+docker push ${ECR_URI}/fiap-todo-api:v1.0.0
+
+echo "✅ Imagem publicada: ${ECR_URI}/fiap-todo-api:v1.0.0"
+
+# Voltar para o diretório raiz
+cd ..
+```
+
+### Passo 11: Atualizar Manifests com a Imagem
+
+```bash
+# Atualizar kustomization.yaml com a imagem real
+cd gitops-repo/applications/fiap-todo-api/overlays/production
+
+# Editar com kustomize
+kustomize edit set image fiap-todo-api=${ECR_URI}/fiap-todo-api:v1.0.0
+
+# Ver mudança
+cat kustomization.yaml
+
+# Voltar para o diretório raiz
+cd ../../../../
+```
+
+**Resultado esperado em `kustomization.yaml`:**
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+images:
+  - name: fiap-todo-api
+    newName: 123456789012.dkr.ecr.us-east-1.amazonaws.com/fiap-todo-api
+    newTag: v1.0.0
+
+patches:
+  - path: deployment-patch.yaml
+```
+
+### Passo 12: Commit e Push das Mudanças
+
+```bash
+# Adicionar mudanças
+git add gitops-repo/applications/fiap-todo-api/overlays/production/kustomization.yaml
+
+# Commit
+git commit -m "feat: atualizar imagem para v1.0.0"
+
+# Push para o GitHub
+git push origin main
+
+echo "✅ Manifests atualizados no Git!"
+```
+
+---
+
+## 🚀 Parte 5: Deploy com ArgoCD
+
+### Passo 13: Criar Application no ArgoCD
 
 ```bash
 # Ver Application manifest
@@ -299,7 +400,7 @@ spec:
       - CreateNamespace=true
 ```
 
-### Passo 10: Aplicar Application
+### Passo 14: Aplicar Application
 
 ```bash
 # Criar namespace para a aplicação
@@ -315,7 +416,7 @@ argocd app list
 argocd app get fiap-todo-api
 ```
 
-### Passo 11: Sync Manual (primeira vez)
+### Passo 15: Sync Manual (primeira vez)
 
 ```bash
 # Sync da aplicação
@@ -330,9 +431,9 @@ argocd app get fiap-todo-api
 
 ---
 
-## 🔄 Parte 5: Testar GitOps Workflow
+## 🔄 Parte 6: Testar GitOps Workflow
 
-### Passo 12: Ver Aplicação Deployada
+### Passo 16: Ver Aplicação Deployada
 
 ```bash
 # Ver pods
@@ -345,7 +446,7 @@ kubectl get service -n fiap-todo-prod
 kubectl logs -l app=fiap-todo-api -n fiap-todo-prod --tail=50
 ```
 
-### Passo 13: Fazer Mudança no Git
+### Passo 17: Fazer Mudança no Git
 
 ```bash
 cd ~/fiap-cicd-handson/aula-04
@@ -377,7 +478,7 @@ git commit -m "feat: aumentar replicas para 5"
 git push origin main
 ```
 
-### Passo 14: Ver Auto-Sync
+### Passo 18: Ver Auto-Sync
 
 ```bash
 # ArgoCD vai detectar a mudança automaticamente (3 min)
@@ -394,9 +495,9 @@ kubectl get deployment -n fiap-todo-prod
 
 ---
 
-## 🔍 Parte 6: ArgoCD UI
+## 🔍 Parte 7: ArgoCD UI
 
-### Passo 15: Explorar UI
+### Passo 19: Explorar UI
 
 **No ArgoCD UI (https://localhost:8080):**
 
@@ -417,7 +518,7 @@ kubectl get deployment -n fiap-todo-prod
    - Ver histórico de syncs
    - Cada commit do Git aparece aqui
 
-### Passo 16: Testar Self-Healing
+### Passo 20: Testar Self-Healing
 
 ```bash
 # Deletar um pod manualmente
@@ -431,9 +532,9 @@ kubectl get pods -n fiap-todo-prod -w
 
 ---
 
-## 🎓 Parte 7: Conceitos Aprendidos
+## 🎓 Parte 8: Conceitos Aprendidos
 
-### Passo 17: Arquitetura ArgoCD
+### Passo 21: Arquitetura ArgoCD
 
 ```mermaid
 graph TB
