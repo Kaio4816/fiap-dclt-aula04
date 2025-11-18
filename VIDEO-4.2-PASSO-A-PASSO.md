@@ -64,9 +64,62 @@ graph LR
 
 ---
 
-## 🔄 Parte 2: Criar Estrutura GitHub Actions
+## � Parte 2: Configurar Secrets no GitHub
 
-### Passo 2: Criar Diretórios e Arquivos
+### Passo 2: Adicionar AWS Credentials como Secrets
+
+**⚠️ IMPORTANTE**: Configure os secrets ANTES de criar os workflows!
+
+**Onde configurar:**
+1. Acesse seu repositório no GitHub
+2. **Settings** → **Secrets and variables** → **Actions**
+3. Clique em **New repository secret**
+
+**Secrets necessários:**
+
+| Secret Name | Descrição | Como obter |
+|-------------|-----------|------------|
+| `AWS_ACCESS_KEY_ID` | Access Key ID da AWS | AWS Learner Lab → AWS Details → Show |
+| `AWS_SECRET_ACCESS_KEY` | Secret Access Key da AWS | AWS Learner Lab → AWS Details → Show |
+| `AWS_SESSION_TOKEN` | Session Token (AWS Learner Lab) | AWS Learner Lab → AWS Details → Show |
+| `ARGOCD_PASSWORD` | Senha do ArgoCD admin | `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" \| base64 -d` |
+
+**Passo a passo para adicionar cada secret:**
+```
+1. Clique em "New repository secret"
+2. Name: AWS_ACCESS_KEY_ID
+3. Secret: <cole o valor do AWS Learner Lab>
+4. Clique em "Add secret"
+5. Repita para os outros 3 secrets
+```
+
+**⚠️ Nota sobre AWS Learner Lab:**
+- Os secrets AWS expiram quando a sessão do Learner Lab termina
+- Você precisará atualizar os secrets a cada nova sessão
+- Sempre inicie o Learner Lab antes de executar workflows
+
+---
+
+## 🔄 Parte 3: Criar Workflows GitHub Actions
+
+### Passo 3: Criar Estrutura de Diretórios
+
+```bash
+# Navegar para o diretório do projeto
+cd fiap-dclt-aula04
+
+# Criar estrutura de diretórios
+mkdir -p .github/workflows
+
+# Verificar
+ls -la .github/workflows/
+```
+
+---
+
+## 📦 Parte 4: Workflow 1 - Build e Push Docker
+
+### Passo 4: Criar docker-build.yml
 
 **Linux / macOS:**
 ```bash
@@ -132,6 +185,19 @@ jobs:
           echo "**Status:** ✅ Built and Pushed" >> $GITHUB_STEP_SUMMARY
 EOF
 
+echo "✅ Arquivo docker-build.yml criado!"
+```
+
+**Windows (PowerShell):** *(ver seção Windows abaixo)*
+
+---
+
+## 📝 Parte 5: Workflow 2 - Update Image Tag
+
+### Passo 5: Criar update-image.yml
+
+**Linux / macOS:**
+```bash
 # Criar arquivo update-image.yml
 cat > .github/workflows/update-image.yml << 'EOF'
 name: 🔄 Update Image Tag in GitOps Repo
@@ -198,6 +264,19 @@ jobs:
           echo "ArgoCD will automatically sync this change." >> $GITHUB_STEP_SUMMARY
 EOF
 
+echo "✅ Arquivo update-image.yml criado!"
+```
+
+**Windows (PowerShell):** *(ver seção Windows abaixo)*
+
+---
+
+## 🔄 Parte 6: Workflow 3 - ArgoCD Sync
+
+### Passo 6: Criar argocd-sync.yml
+
+**Linux / macOS:**
+```bash
 # Criar arquivo argocd-sync.yml
 cat > .github/workflows/argocd-sync.yml << 'EOF'
 name: 🔄 ArgoCD GitOps Sync
@@ -288,10 +367,35 @@ jobs:
           echo "**Status:** ✅ Synced and Healthy" >> $GITHUB_STEP_SUMMARY
 EOF
 
-echo "✅ Arquivos GitHub Actions criados com sucesso!"
+echo "✅ Arquivo argocd-sync.yml criado!"
 ```
 
-**Windows (PowerShell):**
+**Windows (PowerShell):** *(ver seção Windows abaixo)*
+
+### Passo 7: Verificar Arquivos Criados
+
+```bash
+# Listar arquivos criados
+ls -la .github/workflows/
+
+# Deve mostrar:
+# docker-build.yml
+# update-image.yml
+# argocd-sync.yml
+
+# Ver conteúdo de um arquivo (exemplo)
+cat .github/workflows/docker-build.yml
+```
+
+---
+
+## 💻 Parte 7: Comandos para Windows
+
+### Passo 8: Criar Todos os Workflows (Windows PowerShell)
+
+**⚠️ Nota**: Execute cada bloco separadamente no PowerShell.
+
+**Criar docker-build.yml:**
 ```powershell
 # Navegar para o diretório do projeto
 cd fiap-dclt-aula04
