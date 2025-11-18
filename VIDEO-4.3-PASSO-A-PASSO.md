@@ -531,7 +531,39 @@ images:
 - FluxCD vai substituir `v1.0.0` pela tag mais recente do ECR
 - Commit automático no Git
 
-### Passo 17: Criar Secret para ECR
+### Passo 17: Exportar Credenciais AWS
+
+**⚠️ IMPORTANTE:** Você precisa das credenciais AWS do Learner Lab!
+
+**Linux / macOS:**
+```bash
+# 1. Copiar credenciais do AWS Learner Lab
+# Acesse: AWS Academy → Learner Lab → AWS Details → Show → AWS CLI
+
+# 2. Exportar variáveis
+export AWS_ACCESS_KEY_ID="ASIA..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_SESSION_TOKEN="..."
+
+# 3. Verificar
+echo $AWS_ACCESS_KEY_ID
+```
+
+**Windows (PowerShell):**
+```powershell
+# 1. Copiar credenciais do AWS Learner Lab
+# Acesse: AWS Academy → Learner Lab → AWS Details → Show → AWS CLI
+
+# 2. Definir variáveis
+$env:AWS_ACCESS_KEY_ID = "ASIA..."
+$env:AWS_SECRET_ACCESS_KEY = "..."
+$env:AWS_SESSION_TOKEN = "..."
+
+# 3. Verificar
+echo $env:AWS_ACCESS_KEY_ID
+```
+
+### Passo 18: Criar Secret para ECR
 
 ```bash
 # Criar secret com credenciais AWS
@@ -540,9 +572,12 @@ kubectl create secret generic ecr-credentials \
   --from-literal=AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
   --from-literal=AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
   -n flux-system
+
+# Verificar
+kubectl get secret ecr-credentials -n flux-system
 ```
 
-### Passo 18: Aplicar Image Automation
+### Passo 19: Aplicar Image Automation
 
 ```bash
 # Aplicar todas as configs
@@ -561,7 +596,7 @@ flux logs --follow
 
 ## 🎯 Parte 7: Testar Fluxo Completo
 
-### Passo 19: Fazer Deploy de Nova Versão
+### Passo 20: Fazer Deploy de Nova Versão
 
 ```bash
 # 1. Fazer mudança no código
@@ -586,7 +621,7 @@ git push origin main
 flux logs --follow
 ```
 
-### Passo 20: Verificar Deployment
+### Passo 21: Verificar Deployment
 
 ```bash
 # Ver pods sendo atualizados
