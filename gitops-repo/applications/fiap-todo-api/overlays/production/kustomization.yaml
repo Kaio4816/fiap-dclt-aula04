@@ -15,4 +15,4 @@ commonLabels:
 images:
 - name: fiap-todo-api
   newName: 777870534201.dkr.ecr.us-east-1.amazonaws.com/fiap-todo-api
-  newTag: 84d3871aff37599cd62df6245b14246646f1ff25
+  newTag: 9d74d91
