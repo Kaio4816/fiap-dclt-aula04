@@ -598,23 +598,40 @@ $env:AWS_SESSION_TOKEN = "..."
 echo $env:AWS_ACCESS_KEY_ID
 ```
 
-### Passo 19: Criar Secret para ECR
+### Passo 19: Obter Account ID da AWS
+
+**⚠️ IMPORTANTE:** Você precisa usar SEU Account ID real, não o exemplo!
+
+```bash
+# Obter seu Account ID
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --profile fiapaws)
+
+# Verificar
+echo "Seu Account ID: $AWS_ACCOUNT_ID"
+
+# Deve mostrar algo como: 777870534201
+```
+
+### Passo 20: Criar Secret para ECR
 
 **⚠️ IMPORTANTE:** Para ECR, precisamos criar um secret do tipo `docker-registry` com token de autenticação.
 
 ```bash
 # 1. Obter token de autenticação do ECR
 ECR_TOKEN=$(aws ecr get-login-password --region us-east-1 --profile fiapaws)
-ECR_REGISTRY="123456789012.dkr.ecr.us-east-1.amazonaws.com"
+ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
 
-# 2. Criar secret docker-registry
+# 2. Verificar variáveis
+echo "ECR Registry: $ECR_REGISTRY"
+
+# 3. Criar secret docker-registry
 kubectl create secret docker-registry ecr-credentials \
   --docker-server=$ECR_REGISTRY \
   --docker-username=AWS \
   --docker-password=$ECR_TOKEN \
   -n flux-system
 
-# 3. Verificar
+# 4. Verificar
 kubectl get secret ecr-credentials -n flux-system
 ```
 
@@ -630,7 +647,32 @@ O token do ECR expira em 12 horas. Para produção, considere usar:
 - **External Secrets Operator** - Rotação automática
 - **Renovação manual** - Para testes
 
-### Passo 20: Aplicar Image Automation
+### Passo 21: Atualizar ImageRepository com Account ID Correto
+
+**⚠️ IMPORTANTE:** Você precisa atualizar o ImageRepository para usar SEU Account ID!
+
+```bash
+# Atualizar ImageRepository com Account ID correto
+cat > gitops-repo/clusters/production/fiap-todo-api-imagerepository.yaml << EOF
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: fiap-todo-api
+  namespace: flux-system
+spec:
+  image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/fiap-todo-api
+  interval: 1m
+  secretRef:
+    name: ecr-credentials
+EOF
+
+# Verificar o arquivo
+cat gitops-repo/clusters/production/fiap-todo-api-imagerepository.yaml
+
+# Deve mostrar seu Account ID real, não 123456789012!
+```
+
+### Passo 22: Aplicar Image Automation
 
 ```bash
 # Aplicar todas as configs
@@ -649,7 +691,7 @@ flux logs --follow
 
 ## 🎯 Parte 7: Testar Fluxo Completo
 
-### Passo 21: Fazer Deploy de Nova Versão
+### Passo 22: Aplicar Image Automation de Nova Versão
 
 ```bash
 # 1. Fazer mudança no código
@@ -674,7 +716,7 @@ git push origin main
 flux logs --follow
 ```
 
-### Passo 22: Verificar Deployment
+### Passo 23: Fazer Deploy Deployment
 
 ```bash
 # Ver pods sendo atualizados
