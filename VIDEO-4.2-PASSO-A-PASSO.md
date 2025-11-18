@@ -36,7 +36,7 @@ graph TB
         B3 --> B4[Push Image]
         B4 --> B5[Update Git Manifests]
         B5 --> B6[Git Repository]
-        B7[ArgoCD] -->|poll| B6
+        B7[ArgoCD] -->|pull| B6
         B7 -->|sync| B8[Cluster]
     end
 ```
@@ -423,7 +423,7 @@ sequenceDiagram
     CI->>Git: 5. Update manifest tag
     Note over Git: Commit by bot
     
-    Argo->>Git: 6. Poll (3min)
+    Argo->>Git: 6. Pull (3min)
     Git-->>Argo: Detect change
     Argo->>K8s: 7. Sync manifests
     K8s-->>Argo: Status: Healthy

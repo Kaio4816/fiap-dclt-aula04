@@ -438,7 +438,7 @@ kubectl get pods -n fiap-todo-prod -w
 ```mermaid
 graph TB
     A[Developer] -->|git push| B[Git Repository]
-    B -->|poll every 3min| C[ArgoCD Server]
+    B -->|pull every 3min| C[ArgoCD Server]
     C -->|sync| D[Kubernetes Cluster]
     C -->|UI/CLI| E[Users]
     D -->|status| C
@@ -467,7 +467,7 @@ sequenceDiagram
     Dev->>Git: 1. Commit manifests
     Note over Git: Source of Truth
     
-    Argo->>Git: 2. Poll (every 3min)
+    Argo->>Git: 2. Pull (every 3min)
     Git-->>Argo: Detect changes
     
     Argo->>K8s: 3. Apply manifests
