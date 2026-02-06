@@ -12,7 +12,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: fiap-todo-api
+  ECR_REPOSITORY: cicd
   ARGOCD_SERVER: 'localhost:8080'
   ARGOCD_APP_NAME: 'fiap-todo'
 
